@@ -1,0 +1,424 @@
+Sub Import_work()
+
+
+
+    Dim sh_COSCO As Worksheet
+
+
+
+    Dim sh_LQ As Worksheet
+
+
+
+    Dim sh_Topside As Worksheet
+
+
+
+    Dim org_cell As Range
+
+
+
+    Dim source_cell As Range
+
+
+
+   
+
+
+
+    Dim stName As Variant
+
+
+
+    Dim Org_header As Range
+
+
+
+    Dim sou_header As Range
+
+
+
+    Dim st_cell As Range
+
+
+
+   
+
+
+
+    '아래 셋팅값은 Source 원본시트가 변동이 있을때 수정 하시오----------------------
+
+
+
+    Set importSheet = ThisWorkbook.Sheets("Import_Actual")
+
+
+
+    Set Source_All = ThisWorkbook.Sheets("Source_All")
+
+
+
+    
+
+
+
+    '아래 셋팅값은 HHI 오는 Source Data 엑셀시트에 값이 변동될시 수정해야함
+
+
+
+    Set source_row = Source_All.Range("O8:O728") '402
+
+
+
+    Set source_col = Source_All.Range("W6:EY6")  'DA
+
+
+
+    
+
+
+
+    ir = 2 '
+
+
+
+    ic = 1
+
+
+
+    JGS_start_row = 4
+
+
+
+    
+
+
+
+    Application.ScreenUpdating = True
+
+
+
+    Application.DisplayAlerts = True
+
+
+
+'-------------------------------------------------------------------------------
+
+
+
+' CLEAR
+
+
+
+Set currentWorkbook = ThisWorkbook
+
+
+
+    ' 'Import' 시트에서 2번 행 아래의 모든 값을 삭제----------------------------
+
+
+
+
+
+
+
+    importSheet.Activate
+
+
+
+    importSheet.Rows("2:100000").Select
+
+
+
+      Selection.ClearContents
+
+
+
+    importSheet.Range("A1").Select
+
+
+
+     Application.CutCopyMode = False
+
+
+
+          
+
+
+
+    r = 0
+
+
+
+
+
+
+
+    ' BLOCK Status Loop
+
+
+
+        For Each s_row In source_row
+
+
+
+            For Each s_col In source_col
+
+
+
+            
+
+
+
+              P_Start = Left(Source_All.Cells(6, s_col.Column).Value, 7)
+
+
+
+              Steage_Code = Right(Source_All.Cells(6, s_col.Column).Value, 4)
+
+
+
+              Steage_Name = Source_All.Cells(4, s_col.Column).Value
+
+
+
+              
+
+
+
+              If s_row.Offset(0, 0).Value <> "" And P_Start = "P_Start" Then
+
+
+
+              
+
+
+
+             ' MsgBox "start: " + importSheet.Cells(ir + r, ic).Address
+
+
+
+                Set st_cell = Source_All.Cells(s_row.Row, s_col.Column)
+
+
+
+
+
+
+
+                  importSheet.Cells(ir + r, ic) = s_row.Row                           'SN
+
+
+
+                  importSheet.Cells(ir + r, ic + 2) = s_row.Offset(0, -13).Value      'AREA
+
+
+
+                  importSheet.Cells(ir + r, ic + 3) = s_row.Offset(0, -12).Value      'ZONE
+
+
+
+                  importSheet.Cells(ir + r, ic + 4) = s_row.Offset(0, -11).Value      'MOD
+
+
+
+                  importSheet.Cells(ir + r, ic + 5) = s_row.Offset(0, -11).Value      'LEVEL
+
+
+
+                  importSheet.Cells(ir + r, ic + 6) = s_row.Offset(0, -10).Value       'NAME
+
+
+
+                  
+
+
+
+                    If Len(s_row.Offset(0, -4).Value) > 4 Then
+
+
+
+                      HG_2PE = s_row.Offset(0, -4).Value                              'HG_2PE 값있으면 적용
+
+
+
+                    Else
+
+
+
+                      HG_2PE = importSheet.Cells(ir + r - 1, ic + 11).Value           'HG_2PE 값없으면 윗값 적용
+
+
+
+                    End If
+
+
+
+                  importSheet.Cells(ir + r, ic + 11) = HG_2PE
+
+
+
+                    
+
+
+
+                  importSheet.Cells(ir + r, ic + 12) = s_row.Offset(0, -4).Value      'H_2PE
+
+
+
+
+
+
+
+
+
+
+
+                    If Len(s_row.Offset(0, -6).Value) > 4 Then
+
+
+
+                      HG_1PE = s_row.Offset(0, -6).Value                              'HG_1PE 값있으면 적용
+
+
+
+                    Else
+
+
+
+                      HG_1PE = importSheet.Cells(ir + r - 1, ic + 13).Value           'HG_1PE 값없으면 윗값 적용
+
+
+
+                    End If
+
+
+
+                  importSheet.Cells(ir + r, ic + 13) = HG_1PE
+
+
+
+                    
+
+
+
+                  importSheet.Cells(ir + r, ic + 14) = s_row.Offset(0, -6).Value      'H_1PE
+
+
+
+                  
+
+
+
+                  
+
+
+
+                  
+
+
+
+                  
+
+
+
+
+
+
+
+                  importSheet.Cells(ir + r, ic + 19) = s_row.Offset(0, 0).Value       'BLOCK
+
+
+
+                  importSheet.Cells(ir + r, ic + 20) = s_row.Offset(0, 1).Value       'SUBCON
+
+
+
+                  
+
+
+
+                  importSheet.Cells(ir + r, ic + 21) = Steage_Code                    'STAGE CODE
+
+
+
+                  importSheet.Cells(ir + r, ic + 22) = Steage_Name                    'STAGE NAME
+
+
+
+                  importSheet.Cells(ir + r, ic + 23) = st_cell.Offset(0, 0).Value     'PSD PLAN START DATE
+
+
+
+                  importSheet.Cells(ir + r, ic + 24) = st_cell.Offset(0, 1).Value     'PFD PLAN FINISH DATE
+
+
+
+                  importSheet.Cells(ir + r, ic + 25) = st_cell.Offset(0, 2).Value     'PPRO PLAN PROGRESS
+
+
+
+                  importSheet.Cells(ir + r, ic + 26) = st_cell.Offset(0, 3).Value     'ASD ACTUAL START
+
+
+
+                  importSheet.Cells(ir + r, ic + 27) = st_cell.Offset(0, 4).Value     'ASD ACTUAL FINISH
+
+
+
+                  importSheet.Cells(ir + r, ic + 28) = st_cell.Offset(0, 5).Value     'APRO ACTUAL PRO
+
+
+
+                  
+
+
+
+              r = r + 1
+
+
+
+              End If
+
+
+
+              
+
+
+
+          Next s_col
+
+
+
+          
+
+
+
+      Next s_row
+
+
+
+    
+
+
+
+    Application.ScreenUpdating = True
+
+
+
+    Application.DisplayAlerts = True
+
+
+
+    
+
+
+
+MsgBox "done"
+
+
+
+End Sub
+
+
+

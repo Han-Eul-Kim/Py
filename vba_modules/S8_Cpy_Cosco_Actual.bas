@@ -1,0 +1,444 @@
+Sub Cpy_Cosco_Actual()
+
+
+
+    Dim sourceFilePath As String
+
+
+
+    Dim sourceWorkbook As Workbook
+
+
+
+    Dim currentWorkbook As Workbook
+
+
+
+    Dim sheet As Worksheet
+
+
+
+    Dim targetSheet As Worksheet
+
+
+
+    Dim ws As Worksheet
+
+
+
+    Dim sheetName As Variant
+
+
+
+    Dim sheetNames As Variant
+
+
+
+    Dim usedRange As Range
+
+
+
+    
+
+
+
+    ' Set reference to current workbook
+
+
+
+    Set currentWorkbook = ThisWorkbook
+
+
+
+    
+
+
+
+    ' 복사할 시트 이름 배열
+
+
+
+    sheetNames = Array("Block Fabrication")
+
+
+
+    
+
+
+
+    MsgBox "Structure Progresss-COSCO 파일오픈"
+
+
+
+    ' 현재 워크북의 모든 시트를 반복하여 지정된 시트 삭제
+
+
+
+    Application.DisplayAlerts = False
+
+
+
+    For Each ws In currentWorkbook.Sheets
+
+
+
+        For Each sheetName In sheetNames
+
+
+
+            If ws.Name = sheetName Then
+
+
+
+                ws.Delete
+
+
+
+                Exit For
+
+
+
+            End If
+
+
+
+        Next sheetName
+
+
+
+    Next ws
+
+
+
+    Application.DisplayAlerts = True
+
+
+
+    
+
+
+
+    ' 파일 선택 대화 상자 열기
+
+
+
+    sourceFilePath = Application.GetOpenFilename(FileFilter:="Excel Files (*.xls; *.xlsx; *.xlsm; *.*), *.xls; *.xlsx; *.xlsm; *.*, All Files (*.*), *.*", Title:="Select a File")
+
+
+
+    
+
+
+
+    ' 사용자가 파일을 선택하지 않고 취소했을 경우
+
+
+
+    If sourceFilePath = "False" Then
+
+
+
+        MsgBox "No file selected.", vbExclamation
+
+
+
+        Exit Sub
+
+
+
+    End If
+
+
+
+    
+
+
+
+    Set currentWorkbook = ThisWorkbook
+
+
+
+    
+
+
+
+    ' 선택한 파일 열기
+
+
+
+    Set sourceWorkbook = Workbooks.Open(sourceFilePath)
+
+
+
+       
+
+
+
+    ' 지정된 시트 복사 (Values만)
+
+
+
+    Application.DisplayAlerts = False
+
+
+
+    Application.ScreenUpdating = False
+
+
+
+    
+
+
+
+    For i = LBound(sheetNames) To UBound(sheetNames)
+
+
+
+        On Error Resume Next
+
+
+
+        Set sheet = sourceWorkbook.Sheets(sheetNames(i))
+
+
+
+        Set ws = sourceWorkbook.Sheets(sheetNames(i))
+
+
+
+        
+
+
+
+        If Not sheet Is Nothing Then
+
+
+
+            ws.Cells.Copy
+
+
+
+            ws.Cells.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks:=False, Transpose:=False
+
+
+
+            Application.CutCopyMode = False
+
+
+
+        
+
+
+
+        
+
+
+
+        
+
+
+
+        
+
+
+
+            ' 새 시트 생성
+
+
+
+            Set targetSheet = currentWorkbook.Sheets.Add(After:=currentWorkbook.Sheets(currentWorkbook.Sheets.Count))
+
+
+
+            targetSheet.Name = sheetNames(i)
+
+
+
+            
+
+
+
+            ' 사용되고 있는 범위만 가져오기
+
+
+
+            Set usedRange = sheet.usedRange
+
+
+
+            
+
+
+
+            ' 서식 복사 (셀 크기, 병합 셀 등)
+
+
+
+            usedRange.Copy
+
+
+
+            targetSheet.Range(usedRange.Address).PasteSpecial xlPasteColumnWidths
+
+
+
+            targetSheet.Range(usedRange.Address).PasteSpecial xlPasteFormats
+
+
+
+            
+
+
+
+            ' 값만 복사
+
+
+
+            targetSheet.Range(usedRange.Address).Value = usedRange.Value
+
+
+
+            
+
+
+
+            ' 병합된 셀 복사
+
+
+
+            For Each mergedCell In sheet.usedRange.MergeAreas
+
+
+
+                targetSheet.Range(mergedCell.Address).Merge
+
+
+
+            Next mergedCell
+
+
+
+            
+
+
+
+            Application.CutCopyMode = False
+
+
+
+        End If
+
+
+
+        Set sheet = Nothing
+
+
+
+        Set targetSheet = Nothing
+
+
+
+        On Error GoTo 0
+
+
+
+    Next i
+
+
+
+    
+
+
+
+    Application.ScreenUpdating = True
+
+
+
+    Application.DisplayAlerts = True
+
+
+
+    
+
+
+
+    ' 선택한 파일 닫기
+
+
+
+    sourceWorkbook.Close SaveChanges:=False
+
+
+
+    
+
+
+
+    ' 정리
+
+
+
+    Set sourceWorkbook = Nothing
+
+
+
+    Set currentWorkbook = Nothing
+
+
+
+    Set usedRange = Nothing
+
+
+
+    
+
+
+
+    MsgBox "Done"
+
+
+
+    Call CompareRanges
+
+
+
+    
+
+
+
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
